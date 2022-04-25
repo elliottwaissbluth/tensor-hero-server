@@ -2,3 +2,5 @@ flask
 rq
 redis
 requests
+numpy
+librosa

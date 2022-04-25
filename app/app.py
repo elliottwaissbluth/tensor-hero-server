@@ -1,11 +1,11 @@
 from flask import Flask, jsonify, request, Response, g
-from worker import print_title
+from worker import getChart
 from redis import Redis
 from rq import Queue
 from rq.job import Job
 import pickle
-import os
-import sys
+import librosa
+import numpy as np
 
 r = Redis(host='redis', port=6379) 
 queue = Queue(connection=r)
@@ -13,17 +13,20 @@ app = Flask(__name__)
 
 @app.put('/createJob')
 def createJob():
-    # Load from volume from worker
-    title_path = '/home/node/app/title.pkl'
-
+    # Get title of song and audio file from request
     title = request.form.get('title')
-    sys.stdout.write('pickling title')
-    sys.stdout.write(os.getcwd())
+    audio = request.files.get('audio')
+   
+    # Load raw audio into numpy array, get sample rate 
+    raw_audio, sr = librosa.load(audio)
 
-    with open(title_path, 'wb') as f:
-      pickle.dump(title, f)
+    # Serialize tuple (raw_audio, sr, title) as pickle file in volume
+    audio_path = '/home/node/app/audio.pkl'
+    with open(audio_path, 'wb') as f:
+      pickle.dump((raw_audio, sr, title), f)
 
-    _ = queue.enqueue(print_title, args=(title_path,))
+    # Pass audio path to getChart(), which will return the notes array
+    job = queue.enqueue(getChart, args=(audio_path,))
 
     return jsonify({'test' : 'success'}), 200
 

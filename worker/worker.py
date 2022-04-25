@@ -1,6 +1,11 @@
 import pickle
+import numpy as np
 
-def print_title(title_path):
-    with open(title_path, 'rb') as f:
-        title = pickle.load(f)
-    print(f'title in print_title: {title}')
+def getChart(audio_path):
+    with open(audio_path, 'rb') as f:
+        audio = pickle.load(f)
+    (raw_audio, sr, title) = audio
+    
+    print(f'title in getChart: {title}')
+    print(f'audio shape: {raw_audio.shape}')
+    print(f'sr: {sr}')
