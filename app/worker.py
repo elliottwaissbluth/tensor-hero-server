@@ -1,8 +1,6 @@
-import requests
+import pickle
 
-def analyze_audio(raw_audio,sr):
-    '''FIXME
-    '''
-    print(f'I\'m in the audio!')
-    print(raw_audio)
-    print(sr)
+def print_title(title_path):
+    with open(title_path, 'rb') as f:
+        title = pickle.load(f)
+    print(f'title in print_title: {title}')
