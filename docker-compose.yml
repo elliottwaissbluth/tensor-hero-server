@@ -5,6 +5,8 @@ services:
     container_name: "app"
     ports:
       - "8000:5000"
+    volumes:
+      - myapp:/home/node/app
   
   redis:
     image: redis
@@ -21,3 +23,8 @@ services:
       replicas: 1
     depends_on:
       - redis
+    volumes:
+      - myapp:/home/node/app
+
+volumes:
+  myapp:
