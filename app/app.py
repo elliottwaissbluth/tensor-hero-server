@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request, Response, g
-from worker import getChart
+from flask import current_app
+import time
+import worker
 from redis import Redis
 from rq import Queue
 from rq.job import Job
@@ -26,9 +28,27 @@ def createJob():
       pickle.dump((raw_audio, sr, title), f)
 
     # Pass audio path to getChart(), which will return the notes array
-    job = queue.enqueue(getChart, args=(audio_path,))
+    task = queue.enqueue(worker.getChart, args=(audio_path,))
 
-    return jsonify({'test' : 'success'}), 200
+    # Wait for task to finish
+    while not task.result:
+      current_app.logger.debug('Waiting for task')
+      time.sleep(1)
+
+    if task:
+        response_object = {
+            "status": "success",
+            "data": {
+                "task_id": task.get_id(),
+                "task_status": task.get_status(),
+                "task_result": task.result,
+            },
+        }
+    else:
+        response_object = {"status": "error"}
+    current_app.logger.debug(f'chart_string: {task.result}')
+    return jsonify(response_object), 200
+
 
 
 if __name__ == "__main__":
