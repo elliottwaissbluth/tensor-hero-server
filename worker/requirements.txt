@@ -2,3 +2,4 @@ rq
 redis
 requests
 numpy
+librosa
