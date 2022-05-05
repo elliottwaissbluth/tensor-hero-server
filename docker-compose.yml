@@ -4,9 +4,11 @@ services:
     build: ./app
     container_name: "app"
     ports:
-      - "8000:5000"
+      - "5000:5000"
     volumes:
       - myapp:/home/node/app
+    networks:
+      - default
   
   redis:
     image: redis
@@ -14,6 +16,8 @@ services:
       - 6379:6379
     expose:
       - '6379'
+    networks:
+      - default
   
   worker:
     build: ./worker
@@ -25,6 +29,13 @@ services:
       - redis
     volumes:
       - myapp:/home/node/app
+    networks:
+      - default
 
 volumes:
   myapp:
+
+networks:
+  default:
+    name: statusNetwork
+    driver: bridge
