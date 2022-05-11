@@ -3,6 +3,6 @@ COPY . /app
 WORKDIR /app
 RUN apt-get update && apt-get install build-essential -y && apt-get install libsndfile1-dev -y
 RUN pip install -r requirements.txt
-EXPOSE 5000
+EXPOSE 4000
 
 CMD ["python", "app.py"]

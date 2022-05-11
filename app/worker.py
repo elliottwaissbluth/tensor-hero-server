@@ -4,27 +4,27 @@ from baseline import create_notes_array, generate_notes, onset_time, onset_time_
 import requests
 import time
 
-def getChart(audio_path, jobId):
+def getChart(metadata, audio_path, jobId):
+    COM_ENDPOINT = 'http://ml-server:4000/updateJobStatus'
+
     with open(audio_path, 'rb') as f:
         audio = pickle.load(f)
-    (raw_audio, sr, title) = audio
+    (raw_audio, sr) = audio
     
     # FIXME: Source separation
-    time.sleep(10)
+    time.sleep(8)
     
     # FIXME: Spectrogram computation
-    requests.post('http://app:5000/updateStatus',
-                  json = {'status' : 1, 'jobId' : jobId})
-    time.sleep(10)
+    requests.post(COM_ENDPOINT, json = {'status' : 1, 'jobId' : jobId})
+    time.sleep(12)
 
     # FIXME: Flattening array computation
-    requests.post('http://app:5000/updateStatus',
-                  json = {'status' : 2, 'jobId' : jobId})
-    time.sleep(10)
+    requests.post(COM_ENDPOINT, json = {'status' : 2, 'jobId' : jobId})
+    time.sleep(6)
 
     # FIXME: Inference computation
-    requests.post('http://app:5000/updateStatus',
-                  json = {'status' : 3, 'jobId' : jobId})
+    requests.post(COM_ENDPOINT, json = {'status' : 3, 'jobId' : jobId})
+    time.sleep(16)
     
     # Compute onsets and convert them to notes_array indices (10ms time bins)
     onset_times = onset_time(raw_audio, sr)
@@ -38,26 +38,29 @@ def getChart(audio_path, jobId):
     
     # Define song metadata
     song_metadata = {
-        'Name' : title,
-        'Artist' : 'Forrest', #FIXME, get from user
+        'Name' : metadata['title'],
+        'Artist' : metadata['artist'],
         'Charter' : 'Tensor Hero',
         'Offset' : 0,
         'Resolution' : 192,
-        'Genre' : 'rock', #FIXME, get from user
         'MediaType' : 'cd',
-        'MusicStream' : 'song.ogg' #FIXME, has to be the name of music file returned to user
+        'MusicStream' : 'song.{}'.format(metadata['extension']),
     }
+    if len(metadata['album']) > 0:
+        song_metadata['Album'] = metadata['album']
+    if len(metadata['genre']) > 0:
+        song_metadata['Genre'] = metadata['genre']
+    if len(metadata['year']) > 0:
+        song_metadata['Year'] = ', {}'.format(metadata['year'])
 
 
     # FIXME: Flattening output
-    requests.post('http://app:5000/updateStatus',
-                  json = {'status' : 4, 'jobId' : jobId})
-    time.sleep(10)
+    requests.post(COM_ENDPOINT, json = {'status' : 4, 'jobId' : jobId})
+    time.sleep(6)
 
     # FIXME: Writing chart
-    requests.post('http://app:5000/updateStatus',
-                  json = {'status' : 5, 'jobId' : jobId})
+    requests.post(COM_ENDPOINT, json = {'status' : 5, 'jobId' : jobId})
     chart_string = write_song_from_notes_array(song_metadata, notes_array)
-    time.sleep(10)
+    time.sleep(6)
 
     return chart_string

@@ -2,13 +2,11 @@ version: "2"
 services:
   app:
     build: ./app
-    container_name: "app"
+    container_name: ml-server
     ports:
-      - "5000:5000"
+      - 4000:4000
     volumes:
-      - myapp:/home/node/app
-    networks:
-      - default
+      - ml-server:/home/node/app
   
   redis:
     image: redis
@@ -16,26 +14,16 @@ services:
       - 6379:6379
     expose:
       - '6379'
-    networks:
-      - default
   
   worker:
     build: ./worker
-    container_name: worker
     command: rq worker --with-scheduler -u "redis://redis:6379"
     deploy:
-      replicas: 1
+      replicas: 3
     depends_on:
       - redis
     volumes:
-      - myapp:/home/node/app
-    networks:
-      - default
+      - ml-server:/home/node/app
 
 volumes:
-  myapp:
-
-networks:
-  default:
-    name: statusNetwork
-    driver: bridge
+  ml-server:
