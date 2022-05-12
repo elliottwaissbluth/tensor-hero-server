@@ -1,5 +1,13 @@
 version: "2"
 services:
+  master:
+    build: ./server
+    container_name: master
+    ports:
+      - 8080:8080
+    environment:
+      - ML_SERVER=http://ml-server:4000
+
   app:
     build: ./app
     container_name: ml-server
